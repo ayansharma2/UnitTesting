@@ -1,38 +1,41 @@
 package com.ayan.unittesting
 
 import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.TextView
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.bumptech.glide.request.RequestOptions
 
 class MainActivity : AppCompatActivity() {
-    lateinit var tv:TextView
+
+
+    lateinit var movieSource:MovieSource
     override fun onCreate(savedInstanceState: Bundle?) {
+        initDependencies()
         super.onCreate(savedInstanceState)
+        supportFragmentManager.fragmentFactory = CustomFragmentFactory(
+            movieSource
+        )
         setContentView(R.layout.activity_main)
-        val androidTest=AndroidTest()
-        tv=findViewById(R.id.tv)
-        getData()
+        initialise()
     }
 
-    private fun getData() {
-        val request=RetrofitClient.getInstance().getValue()
-        request.enqueue(object :Callback<Boolean>{
-            override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
-                tv.text="Hi"
-                Log.i("Data","Received")
-            }
-            override fun onFailure(call: Call<Boolean>, t: Throwable) {
-                tv.text="Error"
-                Log.i("Error","Received")
-            }
-
-        })
+    private fun initialise() {
+        if(supportFragmentManager.fragments.size == 0){
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, MoviesListFragment::class.java, null)
+                .commit()
+        }
     }
 
+    private fun initDependencies(){
 
+        if(!::movieSource.isInitialized){
+            // Data Source
+            movieSource=MovieRemoteDataSource()
+        }
+    }
 }
